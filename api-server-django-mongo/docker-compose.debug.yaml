@@ -1,0 +1,28 @@
+services:
+  app-server-django:
+    build: ./
+    command: >
+      sh -c "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000 --nothreading --noreload"
+    volumes:
+      - ./:/usr/src/app/
+    ports:
+      - 6000:8000
+      - 5678:5678
+    env_file:
+      - ./.env
+    depends_on:
+      - mongo
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.2.1-bionic
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: api
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata:/data/db
+
+volumes:
+  dbdata:     

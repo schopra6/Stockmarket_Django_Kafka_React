@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app-server-django:
+    build: ./
+    command: >
+      sh -c "python manage.py flush --no-input &&
+           python manage.py migrate &&
+           python manage.py makemigrations api_finance &&
+           python manage.py migrate --database=finance_db &&
+           python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./:/usr/src/app/
+    ports:
+      - 6000:8000
+    env_file:
+      - ./.env
+    depends_on:
+      - mongo
+    networks:
+      - mongo-net
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.2.1-bionic
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: api
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata:/data/db
+    networks:
+     - mongo-net
+
+networks:
+  mongo-net:
+    external: true
+volumes:
+  dbdata:
